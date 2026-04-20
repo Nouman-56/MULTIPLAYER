@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>MultiView Video Player | 10 Videos Simultaneously</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0f1e 0%, #0a0515 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        /* Header */
+        .header {
+            background: rgba(18, 22, 35, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(243, 156, 18, 0.3);
+            padding: 20px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        /* Control Bar */
+        .control-bar {
+            display: flex;
+            gap: 15px;
+            padding: 20px 30px;
+            background: rgba(18, 22, 35, 0.8);
+            border-bottom: 1px solid rgba(243, 156, 18, 0.2);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.5);
+        }
+        
+        .control-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+        
+        .control-btn.danger {
+            background: rgba(231, 76, 60, 0.8);
+        }
+        
+        .control-btn.warning {
+            background: rgba(52, 152, 219, 0.8);
+        }
+        
+        /* Grid Layout */
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        /* Video Card */
+        .video-card {
+            background: rgba(18, 22, 35, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid rgba(243, 156, 18, 0.2);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .video-card:hover {
+            border-color: rgba(243, 156, 18, 0.5);
+            transform: translateY(-3px);
+        }
+        
+        .video-header {
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(243, 156, 18, 0.2);
+        }
+        
+        .video-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f39c12;
+        }
+        
+        .video-number {
+            background: rgba(243, 156, 18, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+        }
+        
+        .video-container iframe,
+        .video-container video {
+            width: 100%;
+            height: 250px;
+            border: none;
+        }
+        
+        .video-controls {
+            padding: 12px 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid rgba(243, 156, 18, 0.2);
+            flex-wrap: wrap;
+        }
+        
+        .video-url-input {
+            flex: 1;
+            background: rgba(10, 12, 25, 0.8);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            border-radius: 30px;
+            padding: 8px 15px;
+            color: white;
+            font-size: 12px;
+            outline: none;
+        }
+        
+        .video-url-input:focus {
+            border-color: #f39c12;
+        }
+        
+        .video-play-btn, .video-pause-btn {
+            background: rgba(243, 156, 18, 0.2);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            color: #f39c12;
+            padding: 6px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .video-play-btn:hover, .video-pause-btn:hover {
+            background: rgba(243, 156, 18, 0.4);
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            .videos-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                padding: 15px;
+                gap: 15px;
+            }
+            .control-bar {
+                padding: 15px;
+            }
+            .video-container iframe,
+            .video-container video {
+                height: 200px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Toast Message */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: fadeInOut 2s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid rgba(243, 156, 18, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-video"></i> MultiView Video Player</h1>
+        <p>Play 10 videos simultaneously • Each video independent • Paste any video URL (YouTube, MP4, etc.)</p>
+    </div>
+    
+    <div class="control-bar">
+        <button id="playAllBtn" class="control-btn"><i class="fas fa-play"></i> Play All Videos</button>
+        <button id="pauseAllBtn" class="control-btn secondary"><i class="fas fa-pause"></i> Pause All Videos</button>
+        <button id="stopAllBtn" class="control-btn danger"><i class="fas fa-stop"></i> Stop All Videos</button>
+        <button id="resetAllBtn" class="control-btn warning"><i class="fas fa-sync-alt"></i> Reset All Videos</button>
+    </div>
+    
+    <div class="videos-grid" id="videosGrid">
+        <!-- 10 video players will be generated here -->
+    </div>
+    
+    <div class="footer">
+        <i class="fas fa-info-circle"></i> Tip: You can paste any video URL (YouTube, Vimeo, MP4 direct link). Each video plays independently.
+    </div>
+
+    <script>
+        // Default video URLs (sample)
+        const defaultVideos = [
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4",
+            "https://www.w3schools.com/html/mov_bbb.mp4"
+        ];
+        
+        let videoElements = [];
+        let videoSources = [];
+        
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+        
+        function extractVideoId(url) {
+            // YouTube URL detection
+            const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
+            const match = url.match(youtubeRegex);
+            if (match) {
+                return `https://www.youtube.com/embed/${match[1]}?enablejsapi=1`;
+            }
+            // Vimeo detection
+            const vimeoRegex = /vimeo\.com\/(\d+)/;
+            const vimeoMatch = url.match(vimeoRegex);
+            if (vimeoMatch) {
+                return `https://player.vimeo.com/video/${vimeoMatch[1]}?api=1`;
+            }
+            // If already an embed link or direct video
+            if (url.includes('embed') || url.includes('.mp4') || url.includes('.m3u8')) {
+                return url;
+            }
+            // Default: return as is (will try to embed)
+            return url;
+        }
+        
+        function createVideoPlayer(index) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.setAttribute('data-index', index);
+            
+            card.innerHTML = `
+                <div class="video-header">
+                    <span class="video-title"><i class="fas fa-tv"></i> Player ${index + 1}</span>
+                    <span class="video-number">#${String(index + 1).padStart(2, '0')}</span>
+                </div>
+                <div class="video-container" id="videoContainer_${index}">
+                    <video id="video_${index}" src="${defaultVideos[index]}" style="width: 100%; height: 250px; background: #000;"></video>
+                </div>
+                <div class="video-controls">
+                    <input type="text" class="video-url-input" id="urlInput_${index}" placeholder="Paste video URL (YouTube, MP4, etc.)" value="${defaultVideos[index]}">
+                    <button class="video-play-btn" data-index="${index}" data-action="play"><i class="fas fa-play"></i> Play</button>
+                    <button class="video-pause-btn" data-index="${index}" data-action="pause"><i class="fas fa-pause"></i> Pause</button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function initVideoPlayers() {
+            const grid = document.getElementById('videosGrid');
+            grid.innerHTML = '';
+            videoElements = [];
+            
+            for (let i = 0; i < 10; i++) {
+                const player = createVideoPlayer(i);
+                grid.appendChild(player);
+                
+                // Store video element reference
+                const videoElement = document.getElementById(`video_${i}`);
+                if (videoElement) {
+                    videoElements.push(videoElement);
+                } else {
+                    videoElements.push(null);
+                }
+            }
+            
+            // Add event listeners to all buttons
+            document.querySelectorAll('.video-play-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(btn.dataset.index);
+                    playVideo(index);
+                });
+            });
+            
+            document.querySelectorAll('.video-pause-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(btn.dataset.index);
+                    pauseVideo(index);
+                });
+            });
+            
+            document.querySelectorAll('.video-url-input').forEach((input, idx) => {
+                input.addEventListener('change', (e) => {
+                    updateVideoSource(idx, e.target.value);
+                });
+            });
+        }
+        
+        function playVideo(index) {
+            const video = videoElements[index];
+            if (video) {
+                video.play().catch(e => console.log('Play error:', e));
+                showToast(`Player ${index + 1} playing`);
+            }
+        }
+        
+        function pauseVideo(index) {
+            const video = videoElements[index];
+            if (video) {
+                video.pause();
+                showToast(`Player ${index + 1} paused`);
+            }
+        }
+        
+        function playAllVideos() {
+            videoElements.forEach((video, i) => {
+                if (video) {
+                    video.play().catch(e => console.log(`Play error on player ${i + 1}:`, e));
+                }
+            });
+            showToast(`Playing all ${videoElements.length} videos`);
+        }
+        
+        function pauseAllVideos() {
+            videoElements.forEach((video, i) => {
+                if (video) {
+                    video.pause();
+                }
+            });
+            showToast(`Paused all videos`);
+        }
+        
+        function stopAllVideos() {
+            videoElements.forEach((video, i) => {
+                if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                }
+            });
+            showToast(`Stopped all videos`);
+        }
+        
+        function resetAllVideos() {
+            videoElements.forEach((video, i) => {
+                if (video) {
+                    video.src = defaultVideos[i];
+                    video.load();
+                    video.pause();
+                }
+                const input = document.getElementById(`urlInput_${i}`);
+                if (input) {
+                    input.value = defaultVideos[i];
+                }
+            });
+            showToast(`Reset all videos to default`);
+        }
+        
+        function updateVideoSource(index, url) {
+            if (!url || url.trim() === '') return;
+            
+            const video = videoElements[index];
+            if (video) {
+                const embedUrl = extractVideoId(url.trim());
+                
+                // Check if it's a YouTube/Vimeo embed or direct video
+                if (embedUrl.includes('youtube.com/embed') || embedUrl.includes('player.vimeo.com')) {
+                    // For embeds, we need to replace the iframe
+                    const container = document.getElementById(`videoContainer_${index}`);
+                    if (container) {
+                        container.innerHTML = `<iframe id="video_${index}" src="${embedUrl}" style="width: 100%; height: 250px; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                        // Update reference
+                        const newIframe = document.getElementById(`video_${index}`);
+                        if (newIframe) {
+                            // For iframes, we need different approach to control
+                            // Store as special type
+                            videoElements[index] = newIframe;
+                        }
+                    }
+                } else {
+                    // Direct video source
+                    video.src = embedUrl;
+                    video.load();
+                }
+                showToast(`Player ${index + 1} URL updated`);
+            }
+        }
+        
+        // Global control event listeners
+        document.getElementById('playAllBtn').addEventListener('click', playAllVideos);
+        document.getElementById('pauseAllBtn').addEventListener('click', pauseAllVideos);
+        document.getElementById('stopAllBtn').addEventListener('click', stopAllVideos);
+        document.getElementById('resetAllBtn').addEventListener('click', resetAllVideos);
+        
+        // Initialize
+        initVideoPlayers();
+        
+        console.log("MultiView Video Player Ready - 10 videos can play simultaneously");
+    </script>
+</body>
+</html>
